@@ -124,8 +124,8 @@ async def update_order_manager(session, order_id, manager):
 
 
 @connection
-async def get_active_orders(session, tg_id):
-    return await session.scalars(select(Order).where((Order.manager == tg_id) & (Order.admin_status == "Active")))
+async def get_orders_with_status(session, tg_id, status):
+    return await session.scalars(select(Order).where((Order.manager == tg_id) & (Order.admin_status == status)))
 
 
 @connection

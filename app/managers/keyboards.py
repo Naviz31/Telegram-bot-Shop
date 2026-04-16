@@ -10,13 +10,16 @@ managers_menu = InlineKeyboardMarkup(inline_keyboard=[
     InlineKeyboardButton(text="🏁 Завершенные заказы", callback_data="completed_orders")]
 ])
 
-async def active_orders(tg_id):
+async def active_orders(tg_id, status):
     builder = InlineKeyboardBuilder()
-    datas = await db.get_active_orders(tg_id)
-    for data in datas:
-        builder.row(InlineKeyboardButton(text=f"{data.tg_id} - {str(data.registered).split('.')[0]}", callback_data=f"manager_open_order:{data.id}"))
-    if not datas:
-        builder.row(InlineKeyboardButton(text="У вас пока нет заказов", callback_data="ignore"))
+    datas = await db.get_orders_with_status(tg_id, status)
+    if status == "Active":
+        for data in datas:
+            builder.row(InlineKeyboardButton(text=f"{data.tg_id} - {str(data.registered).split('.')[0]}", callback_data=f"manager_open_order:{data.id}"))
+    else:
+        for data in datas:
+            builder.row(InlineKeyboardButton(text=f"{data.tg_id} - {str(data.registered).split('.')[0]}",
+                                             callback_data=f"manager_open_completed_order:{data.id}"))
     builder.row(InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_managers_menu"))
     return builder.as_markup()
 
@@ -43,6 +46,9 @@ async def order_status(order_id):
         builder.row(InlineKeyboardButton(text="В пути", callback_data=f"in_transit_order:{order_id}"))
     if order.status == "В пути":
         builder.row(InlineKeyboardButton(text="Доставлен", callback_data=f"delivered_order:{order_id}"))
+    if order.status == "Доставлен":
+        builder.row(InlineKeyboardButton(text="Собран", callback_data=f"assembly_order:{order_id}"))
+        builder.row(InlineKeyboardButton(text="В пути", callback_data=f"in_transit_order:{order_id}"))
     builder.row(InlineKeyboardButton(text="🔙 Назад", callback_data=f"manager_open_order:{order_id}"))
     return builder.as_markup()
 

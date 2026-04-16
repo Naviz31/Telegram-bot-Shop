@@ -17,7 +17,7 @@ from app.managers.order_processing import status_update_notification, notify_use
 
 class Manager(Filter):
     async def __call__(self, message: Message):
-        return message.from_user.id in MANAGERS_ID
+        return str(message.from_user.id) in MANAGERS_ID
 
 class tracking(StatesGroup):
     code = State()
@@ -46,7 +46,7 @@ async def manager_menu(callback: CallbackQuery):
 async def active_orders(callback: CallbackQuery):
     await callback.answer()
     tg_id = callback.from_user.id
-    keyboard = await kb.active_orders(tg_id)
+    keyboard = await kb.active_orders(tg_id, "Active")
     await callback.message.edit_text("""🔥 Активные заказы 🔥""", reply_markup=keyboard)
 
 
@@ -170,19 +170,61 @@ async def cancel_order_(callback: CallbackQuery, state: FSMContext):
     await notify_user_about_cancellation(bot, order_id, reason)
     await db.update_order_admin_status(order_id = order_id, status = "Canceled")
     keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="🔙 Назад", callback_data=f"manager_open_order:{order_id}")]])
+        inline_keyboard=[[InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_managers_menu")]])
     await callback.message.edit_text("Заказ отменен", reply_markup=keyboard)
 
 
-@R_manager.callback_query(lambda c: c.data.startswith("cancel_order_Y:"))
-async def cancel_order_(callback: CallbackQuery, state: FSMContext):
-    from run import bot
+
+@R_manager.callback_query(lambda c: c.data.startswith("manager_open_completed_order:"))
+async def open_order(callback: CallbackQuery):
     order_id = callback.data.split(":")[1]
-    data = await state.get_data()
-    reason = data["reason"]
-    await notify_user_about_cancellation(bot, order_id, reason)
-    await db.update_order_admin_status(order_id = order_id, status = "Canceled")
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[[InlineKeyboardButton(text="🔙 Назад", callback_data=f"manager_open_order:{order_id}")]])
-    await callback.message.edit_text("Заказ отменен", reply_markup=keyboard)
+    await callback.answer()
+    order = await db.get_order(order_id)
+    cart = order.order_data
+    order_items = ""
+    for item in cart:
+        order_items += f"{cart[item]['name']} - {cart[item]['count']} шт. \n"
+    if order.delivery == "Почта России":
+        deliver_data = f"Индекс: {order.post_code}"
 
+    text = f"""Состав заказа:
+{order_items}
+Метод доставки: {order.delivery}
+
+{deliver_data}
+
+Получатель: {order.fullname}
+
+Отправить до: {(datetime.now() + timedelta(int(order.delivery_days.split(' - ')[0]))).strftime("%d.%m.%Y")}
+
+Статус: {order.status}
+"""
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Возобновить заказ", callback_data=f"activate_order:{order_id}")],
+                                                     [InlineKeyboardButton(text="Назад", callback_data="back_to_managers_menu")]])
+    await callback.message.edit_text(text, reply_markup=keyboard)
+
+
+@R_manager.callback_query(lambda c: c.data.startswith("activate_order:"))
+async def open_order(callback: CallbackQuery):
+    order_id = callback.data.split(":")[1]
+    await callback.answer("Заказ активирован")
+    await db.update_order_admin_status(order_id = order_id, status = "Active")
+    keyboard = await kb.order_settings(order_id)
+    await callback.message.edit_reply_markup(reply_markup=keyboard)
+
+@R_manager.callback_query(F.data == "completed_orders")
+async def completed_orders(callback: CallbackQuery):
+    await callback.answer()
+    tg_id = callback.from_user.id
+    keyboard = await kb.active_orders(tg_id, "Completed")
+    await callback.message.edit_text("""Завершенные заказы""", reply_markup=keyboard)
+
+
+@R_manager.callback_query(lambda c: c.data.startswith("complete_order:"))
+async def cancel_order_(callback: CallbackQuery):
+    order_id = callback.data.split(":")[1]
+    await db.update_order_admin_status(order_id = order_id, status = "Completed")
+    await db.update_order_status(order_id = order_id, status = "Доставлен")
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="Назад", callback_data="back_to_managers_menu")]])
+    text = f"""Заказ №{order_id} завершен"""
+    await callback.message.edit_text(text, reply_markup=keyboard)
