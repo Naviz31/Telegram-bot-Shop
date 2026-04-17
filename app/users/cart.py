@@ -13,10 +13,10 @@ from datetime import datetime
 
 
 from app.database.models import Product, Order
-import app.user.Keyboards as kb
+import app.users.keyboards as kb
 import app.database.requests as db
-from app.user.purchase import is_valid_phone, check_index
-from app.user.delivery import get_delivery_mail
+from app.users.purchase import is_valid_phone, check_index
+from app.users.delivery import get_delivery_mail
 from config import MANAGERS_ID
 
 

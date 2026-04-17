@@ -54,6 +54,7 @@ class Product(Base):
     status: Mapped[bool] = mapped_column(Boolean, nullable=True)
     sizes: Mapped[str] = mapped_column(String(128), nullable=True)
     mass: Mapped[int] = mapped_column(BigInteger, nullable=True)
+    remains: Mapped[int] = mapped_column(BigInteger, nullable=True)
 
 
 class Order(Base):

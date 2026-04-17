@@ -8,6 +8,7 @@ load_dotenv()
 TG_TOKEN = os.getenv("TG_TOKEN")
 PROVIDER_TOKEN = os.getenv("PROVIDER_TOKEN")
 MANAGERS_ID = os.getenv("MANAGERS_ID")
+ADMINS_ID = os.getenv("ADMINS_ID")
 METHOD_MAIL_RUSSIAN = os.getenv("METHOD_MAIL_RUSSIAN") # True - Почта России предлагается как метод доставки, False - нет
 METHOD_SDEK = os.getenv("METHOD_SDEK") # True - СДЭК предлагается как метод доставки, False - нет
 METHOD_YANDEX = os.getenv("METHOD_YANDEX") # True - Яндекс Доставка предлагается как метод доставки, False - нет

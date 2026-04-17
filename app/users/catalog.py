@@ -9,7 +9,7 @@ from aiogram.types import InputFile, FSInputFile, InputMediaPhoto
 
 
 from app.database.models import Product
-import app.user.Keyboards as kb
+import app.users.keyboards as kb
 import app.database.requests as db
 
 
@@ -51,12 +51,13 @@ async def catalog(callback: types.CallbackQuery):
 async def add_catalog(callback: types.CallbackQuery):
     product = Product(
     name="Миша",
-    image="image1.jpg",  # Список строк
+    image="image1.jpg",
     description="Product description",
     price=100,
     status=True,
     sizes="2x2x2",
-    mass=1000
+    mass=1000,
+    remains=10
 )
     await db.add_product(product)
     await callback.answer("Добавлено")

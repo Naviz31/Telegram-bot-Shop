@@ -14,9 +14,9 @@ from typing import Union
 
 from config import MANAGERS_ID
 from app.database.models import Product, Order
-import app.user.Keyboards as kb
+import app.users.keyboards as kb
 import app.database.requests as db
-from app.user.delivery import get_delivery_mail
+from app.users.delivery import get_delivery_mail
 
 
 class delivery(StatesGroup):

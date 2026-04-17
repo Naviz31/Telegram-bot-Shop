@@ -6,7 +6,7 @@ from aiogram.types import Message, callback_query, PreCheckoutQuery, LabeledPric
 from aiogram.filters import CommandStart, Command
 from aiogram.enums import ParseMode
 
-import app.user.Keyboards as kb
+import app.users.keyboards as kb
 import app.database.requests as db
 
 

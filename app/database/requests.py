@@ -138,3 +138,71 @@ async def update_order_status(session, order_id, status):
 async def update_tracking(session, order_id, tracking):
     await session.execute(update(Order).where(Order.id == order_id).values(track_number=tracking))
     await session.commit()
+
+
+@connection
+async def count_product_remains(session, remains):
+    query = select(func.count(Product.id)).where(Product.remains <= remains)
+    result = await session.execute(query)
+    count = result.scalar()
+    return count
+
+
+@connection
+async def count_product_active(session, status):
+    query = select(func.count(Product.id)).where(Product.status == status)
+    result = await session.execute(query)
+    count = result.scalar()
+    return count
+
+
+@connection
+async def get_all_products(session):
+    result = await session.execute(select(Product))
+    products = result.scalars().all()
+    return products
+
+
+@connection
+async def count_all_products(session):
+    query = select(func.count(Product.id))
+    result = await session.execute(query)
+    count = result.scalar()
+    return count
+
+
+@connection
+async def update_product_description(session, product_id, description):
+    await session.execute(update(Product).where(Product.id == product_id).values(description=description))
+    await session.commit()
+
+
+@connection
+async def update_product_price(session, product_id, price):
+    await session.execute(update(Product).where(Product.id == product_id).values(price=price))
+    await session.commit()
+
+
+@connection
+async def update_product_remains(session, product_id, remains):
+    await session.execute(update(Product).where(Product.id == product_id).values(remains=remains))
+    await session.commit()
+
+
+@connection
+async def update_product_status(session, product_id, status):
+    await session.execute(update(Product).where(Product.id == product_id).values(status=status))
+    await session.commit()
+
+
+@connection
+async def update_product_name(session, product_id, name):
+    await session.execute(update(Product).where(Product.id == product_id).values(name=name))
+    await session.commit()
+
+
+@connection
+async def get_all_orders(session):
+    query = select(Order)
+    result = await session.execute(query)
+    return result.scalars().all()
