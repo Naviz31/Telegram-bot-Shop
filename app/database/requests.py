@@ -206,3 +206,88 @@ async def get_all_orders(session):
     query = select(Order)
     result = await session.execute(query)
     return result.scalars().all()
+
+
+@connection
+async def count_all_users(session):
+    result = await session.execute(select(func.count(User.id)))
+    count = result.scalar()
+    return count
+
+
+@connection
+async def get_today_users(session):
+    today = datetime.today().date()  # Получаем сегодняшнюю дату
+    query = select(func.count(User.id)).where(User.registered >= today) \
+        .where(User.registered < today + timedelta(days=1))  # Проверяем, что дата регистрации сегодня
+    result = await session.execute(query)
+    count = result.scalar()  # Получаем результат
+    return count
+
+
+@connection
+async def get_today_orders(session):
+    today = datetime.today().date()  # Получаем сегодняшнюю дату
+    query = select(func.count(Order.id)).where(Order.registered >= today) \
+        .where(User.registered < today + timedelta(days=1))  # Проверяем, что дата регистрации сегодня
+    result = await session.execute(query)
+    count = result.scalar()  # Получаем результат
+    return count
+
+
+@connection
+async def get_active_orders_count(session):  # Получаем сегодняшнюю дату
+    query = select(func.count(Order.id)).where(Order.admin_status >= "Active")  # Проверяем, что дата регистрации сегодня
+    result = await session.execute(query)
+    count = result.scalar()  # Получаем результат
+    return count
+
+
+@connection
+async def get_orders_count_payd(session):  # Получаем сегодняшнюю дату
+    query = select(func.count(Order.id)).where(Order.admin_status != None)  # Проверяем, что дата регистрации сегодня
+    result = await session.execute(query)
+    count = result.scalar()  # Получаем результат
+    return count
+
+
+@connection
+async def get_orders_amount_and_average(session):
+    stmt = select(Order).where(Order.admin_status != None)
+    result = await session.execute(stmt)
+    products = result.scalars().all()
+    all_orders = await get_all_orders()
+    amount_of_payments = 0
+    for order in products:
+        amount_of_payments += (order.cost - order.delivery_cost)
+    return amount_of_payments, amount_of_payments / len(all_orders)
+
+
+@connection
+async def get_orders_count_admin(session):  # Получаем сегодняшнюю дату
+    query = select(func.count(Order.id)) # Проверяем, что дата регистрации сегодня
+    result = await session.execute(query)
+    count = result.scalar()  # Получаем результат
+    return count
+
+
+@connection
+async def get_orders_amount_admin(session, days):
+    if days == 0:
+        return await get_orders_amount_and_average()
+    query = select(Order)
+    date = datetime.now() - timedelta(days=days)
+
+    # Добавляем фильтр по дате
+    query = query.where(Order.registered >= date)
+    query = query.where(Order.registered <= datetime.now())
+
+    # Выполняем запрос
+    result = await session.execute(query)
+    orders = result.scalars().all()
+
+    # Считаем статистику
+    total_orders = len(orders)
+    total_amount = sum(order.cost - order.delivery_cost for order in orders)
+
+    return total_orders, total_amount

@@ -71,7 +71,7 @@ async def all_products(page: int = 0, buttons_per_page: int = 10) -> InlineKeybo
 
     if navigation_buttons:
         builder.row(*navigation_buttons)
-
+    builder.row(InlineKeyboardButton(text="⬅️ Меню товаров", callback_data="exit_admin"))
     return builder.as_markup()
 
 
@@ -173,7 +173,7 @@ async def orders(page: int = 0, buttons_per_page: int = 5) -> InlineKeyboardMark
         builder.row(*navigation_buttons)
 
     # Добавляем кнопку возврата
-    builder.row(InlineKeyboardButton(text="🔙 Назад в админку", callback_data="admin_panel"))
+    builder.row(InlineKeyboardButton(text="🔙 Назад в админку", callback_data="exit_admin"))
 
 
     return builder.as_markup()

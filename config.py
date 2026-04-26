@@ -22,3 +22,9 @@ INDEX_FROM = os.getenv("INDEX_FROM")
 LOGIN_MAIL = os.getenv("LOGIN_MAIL")
 PASSWORD_MAIL = os.getenv("PASSWORD_MAIL")
 TOKEN_MAIL = os.getenv("TOKEN_MAIL")
+
+# Преобразуем в список int
+if MANAGERS_ID:
+    MANAGERS_ID = [int(id.strip()) for id in MANAGERS_ID.split(",")]
+else:
+    MANAGERS_ID = []

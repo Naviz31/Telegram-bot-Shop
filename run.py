@@ -12,6 +12,7 @@ from app.managers.manager import R_manager
 from app.admins.admin import R_admin
 from app.admins.admin_products import R_admin_product
 from app.admins.admin_orders import R_admin_order
+from app.admins.admin_statistics import R_statistics
 
 
 bot = Bot(token=TG_TOKEN)
@@ -19,7 +20,7 @@ bot = Bot(token=TG_TOKEN)
 async def main(bot):
     await async_main()
     dp = Dispatcher()
-    dp.include_routers(user, R_catalog, R_cart, R_purchase, R_payment, R_manager, R_admin, R_admin_product, R_admin_order)
+    dp.include_routers(user, R_catalog, R_cart, R_purchase, R_payment, R_manager, R_admin, R_admin_product, R_admin_order, R_statistics)
     await dp.start_polling(bot)
 
 

@@ -19,13 +19,20 @@ from config import MANAGERS_ID
 
 
 async def get_manager_for_order():
-
     manager_orders = []
-    for manager_id in MANAGERS_ID:
-        count = await db.get_orders_count(manager_id)
-        manager_orders.append((manager_id, count))
-    manager_with_fewest = min(manager_orders, key=lambda x: x[1])
 
+    for manager_id in MANAGERS_ID:
+        print(manager_id)
+        try:
+            count = await db.get_orders_count(manager_id)
+            if count is None:
+                count = 0  # Значение по умолчанию
+            manager_orders.append((manager_id, count))
+        except Exception as e:
+            print(f"Ошибка при получении заказов для {manager_id}: {e}")
+            manager_orders.append((manager_id, 999))  # Временно отключаем этого менеджера
+
+    manager_with_fewest = min(manager_orders, key=lambda x: x[1])
     return manager_with_fewest[0]
 
 

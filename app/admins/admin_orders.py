@@ -25,3 +25,34 @@ async def orders_admin(callback: CallbackQuery):
     await callback.message.edit_text("""📋 ВСЕ ЗАКАЗЫ
 
 Здесь отображаются все заказы пользователей""", reply_markup=await kb.orders())
+
+
+@R_admin_order.callback_query(lambda c: c.data.startswith("admin_order:"))
+async def admin_order(callback: CallbackQuery):
+    order_id = callback.data.split(":")[1]
+    order = await db.get_order(order_id)
+    cart = order.order_data
+    order_items = ""
+    for item in cart:
+        order_items += f"{cart[item]['name']} - {cart[item]['count']} шт. \n"
+    if order.delivery == "Почта России":
+        deliver_data = f"Почта России\n📦 Индекс: {order.post_code}"
+
+    text = f"""
+🧾 НОВЫЙ ЗАКАЗ 
+
+🛍 Состав: 
+{order_items}
+
+🚚 Доставка: {deliver_data}  
+
+👤 Клиент: {order.fullname}
+
+⏰ Отправить до: {(datetime.now() + timedelta(days=int(order.delivery_days.split(' - ')[0]))).strftime("%d.%m.%Y")}
+
+📌 Статус: {order.status}
+
+🔄 Требуется обработка
+    """
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text="⬅️ Назад", callback_data="orders_admin")]])
+    await callback.message.edit_text(text, reply_markup=keyboard)
